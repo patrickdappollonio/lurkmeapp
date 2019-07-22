@@ -1,1 +1,1 @@
-web: lurkmeapp
+web: bin/lurkmeapp
