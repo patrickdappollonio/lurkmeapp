@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+var port = ":" + env("PORT", "1234")
+
 func getLoginInfo() (string, string, error) {
 	var (
 		lurkerUsername = os.Getenv("USERNAME")

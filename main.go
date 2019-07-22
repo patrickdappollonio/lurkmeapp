@@ -1,16 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"github.com/gempir/go-twitch-irc"
+	"github.com/go-chi/chi"
 	"github.com/patrickdappollonio/readfile"
 )
 
 func main() {
+
 	// Get username and token from the environment variables
 	username, token, err := getLoginInfo()
 	if err != nil {
@@ -44,22 +47,29 @@ func main() {
 	})
 
 	// Connect to the Twitch server
-	if err := client.Connect(); err != nil {
-		log.Fatalf("Unable to connect to the Twitch IRC server: %s", err.Error())
-	}
-
-	notifyExit := make(chan bool, 1)
-
-	// Close the connection once we're closing the program
 	go func() {
-		notifyClose := make(chan os.Signal, 1)
-		signal.Notify(notifyClose, os.Interrupt, syscall.SIGTERM)
-		<-notifyClose
-
-		log.Println("Closing connection to Twitch... Goodbye!")
-		client.Disconnect()
-		notifyExit <- true
+		if err := client.Connect(); err != nil {
+			log.Fatalf("Unable to connect to the Twitch IRC server: %s", err.Error())
+		}
 	}()
 
-	<-notifyExit
+	// Create an HTTP server
+	go func() {
+		r := chi.NewRouter()
+		r.Get("/", getHome)
+
+		// Start listening for requests
+		log.Printf("Starting HTTP server on %s", port)
+		if err := http.ListenAndServe(port, r); err != nil {
+			log.Fatalf("Unable to start HTTP server on %s: %s", port, err.Error())
+		}
+	}()
+
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt)
+	<-exit
+}
+
+func getHome(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello, world!")
 }

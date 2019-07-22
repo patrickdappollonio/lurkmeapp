@@ -1,0 +1,16 @@
+[[constraint]]
+  name = "github.com/gempir/go-twitch-irc"
+  version = "2.2.0"
+
+[[constraint]]
+  name = "github.com/go-chi/chi"
+  version = "4.0.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/patrickdappollonio/readfile"
+
+[prune]
+  go-tests = true
+  unused-packages = true
+  non-go = true
